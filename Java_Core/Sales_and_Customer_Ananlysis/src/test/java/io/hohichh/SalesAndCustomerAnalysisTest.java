@@ -1,5 +1,6 @@
 package io.hohichh;
 
+import io.hohichh.DTO.Customer;
 import io.hohichh.DTO.Order;
 import io.hohichh.DTO.OrderItem;
 import io.hohichh.DataSourceMock;
@@ -147,12 +148,64 @@ class SalesAndCustomerAnalysisTest {
     @Test
     @DisplayName("Average check for successfully delivered orders")
     void average_check_for_successfully_delivered_orders_test() {
+        double actualAverageCheck = averageCheck(orders);
+        double referenceAverageCheck = averageCheckRef(orders);
 
+        System.out.println("Average check for successfully delivered order with Stream: " + actualAverageCheck);
+        System.out.println("Average check for successfully delivered order with cycles:    " + referenceAverageCheck);
+
+        assertThat(actualAverageCheck).isEqualTo(referenceAverageCheck);
+    }
+
+    private double averageCheck(List<Order> orders){
+        List<Double> checkSums = orders.stream()
+                .filter(order -> order.getStatus() == DELIVERED)
+                .flatMap(order -> Stream.of(order.getItems()))
+                .mapToDouble(orderItems ->
+                    orderItems.stream()
+                            .mapToDouble(item -> item.getPrice() * item.getQuantity()).sum()
+                ).boxed().toList();
+
+        return checkSums.stream()
+                .mapToDouble(Double::doubleValue)
+                .average()
+                .getAsDouble();
+    }
+
+    private double averageCheckRef(List<Order> orders){
+        double sum = 0.0;
+        int itemCount = 0;
+        for (Order order : orders) {
+            if (order.getStatus() == DELIVERED) {
+                for (OrderItem item : order.getItems()) {
+                    sum += item.getPrice() * item.getQuantity();
+                    itemCount++;
+                }
+            }
+        }
+        return sum / itemCount;
     }
 
     @Test
     @DisplayName("Customers who have more than 5 orders")
     void customers_who_have_more_than_5_orders_test() {
+        List<Customer> actualCustomers = customers(orders);
+        List<Customer> referenceCustomers = customersRef(orders);
 
+        System.out.println("Customers who have more than 5 orders with Stream: " + actualCustomers);
+        System.out.println("Customers who have more than 5 orders with cycles:    " + referenceCustomers);
+
+        assertThat(actualCustomers).containsExactlyInAnyOrderElementsOf(referenceCustomers);
+    }
+
+    private List<Customer> customers(List<Order> orders) {
+        Map<Order, Customer> customerMap = new HashMap<>();
+        customerMap = orders.stream()
+
+        return null;
+    }
+
+    private List<Customer> customersRef(List<Order> orders) {
+        return null;
     }
 }
