@@ -1,49 +1,30 @@
 /*
  * Author: Yelizaveta Verkovich aka Hohich
- * Task: A custom implementation of a doubly-linked list in Java.
- *
- * This file contains the CustomLinkedList class and its necessary inner classes
- * (CustomIterator, CustomNode) to provide a complete and functional list data structure.
+ * Task: Create a custom realization of LinkedList and implement a set of standard operations.
+ * The implementation must be covered with unit tests using JUnit 5.
  */
 package io.hohichh;
 
 import java.util.*;
 
 /**
- * A custom implementation of a doubly-linked list.
- * This class extends {@link AbstractSequentialList} to minimize the implementation effort.
- * Most of the random-access methods (like {@code get(int)}, {@code add(int, E)}, {@code remove(int)})
- * are implemented by the parent class by leveraging the {@link #listIterator(int)} method,
- * which is the core of this implementation.
- *
- * <p>This implementation is not synchronized.
+ * A custom implementation of a doubly-linked list, extending {@link AbstractSequentialList}
+ * to simplify the implementation of index-based operations. This class manages the list's
+ * structure through references to its head and tail nodes.
  *
  * @param <E> the type of elements held in this collection
  */
-public class CustomLinkedList<E> extends AbstractSequentialList<E> {
-    /**
-     * Pointer to the first node of the list.
-     */
+public class CustomLinkedList<E> extends AbstractSequentialList<E>
+{
     private CustomNode<E> head;
-    /**
-     * Pointer to the last node of the list.
-     */
     private CustomNode<E> tail;
 
-    /**
-     * The number of elements in the list.
-     */
     private int size;
 
-    /**
-     * Constructs an empty list.
-     */
     public CustomLinkedList() {}
 
     /**
      * Returns the number of elements in this list.
-     *
-     * @return the number of elements in this list
      */
     @Override
     public int size() {
@@ -52,11 +33,6 @@ public class CustomLinkedList<E> extends AbstractSequentialList<E> {
 
     /**
      * Returns the element at the specified position in this list.
-     * This implementation delegates to the parent class, which uses the list iterator.
-     *
-     * @param index index of the element to return
-     * @return the element at the specified position in this list
-     * @throws IndexOutOfBoundsException if the index is out of range (index < 0 || index >= size())
      */
     @Override
     public E get(int index) {
@@ -64,32 +40,21 @@ public class CustomLinkedList<E> extends AbstractSequentialList<E> {
     }
 
     /**
-     * Returns a list iterator over the elements in this list (in proper sequence),
-     * starting at the specified position in the list.
-     *
-     * @param index index of the first element to be returned from the list iterator (by a call to next)
-     * @return a ListIterator of the elements in this list (in proper sequence), starting at the specified position
-     * @throws IndexOutOfBoundsException if the index is out of range (index < 0 || index > size())
+     * Returns a list iterator over the elements in this list.
      */
     @Override
     public ListIterator<E> listIterator(int index) {
         return new CustomIterator(index);
     }
-
     /**
      * Inserts the specified element at the beginning of this list.
-     *
-     * @param e the element to add
      */
     @Override
     public void addFirst(E e){
         linkToHead(e);
     }
-
     /**
      * Appends the specified element to the end of this list.
-     *
-     * @param e the element to add
      */
     @Override
     public void addLast(E e){
@@ -98,11 +63,6 @@ public class CustomLinkedList<E> extends AbstractSequentialList<E> {
 
     /**
      * Inserts the specified element at the specified position in this list.
-     * This implementation delegates to the parent class, which uses the list iterator.
-     *
-     * @param index index at which the specified element is to be inserted
-     * @param e element to be inserted
-     * @throws IndexOutOfBoundsException if the index is out of range (index < 0 || index > size())
      */
     public void add(E e, int index) {
         super.add(index, e);
@@ -110,71 +70,45 @@ public class CustomLinkedList<E> extends AbstractSequentialList<E> {
 
     /**
      * Returns the first element in this list.
-     *
-     * @return the first element in this list
-     * @throws NoSuchElementException if this list is empty
      */
     @Override
     public E getFirst(){
-        if (head == null) throw new NoSuchElementException();
         return head.getEl();
     }
     /**
      * Returns the last element in this list.
-     *
-     * @return the last element in this list
-     * @throws NoSuchElementException if this list is empty
      */
     @Override
     public E getLast(){
-        if (tail == null) throw new NoSuchElementException();
         return tail.getEl();
     }
 
     /**
      * Removes and returns the first element from this list.
-     *
-     * @return the first element from this list
-     * @throws NoSuchElementException if this list is empty
      */
     @Override
     public E removeFirst(){
-        if (head == null) throw new NoSuchElementException();
         E temp = head.getEl();
         unlinkHead();
         return temp;
     }
     /**
      * Removes and returns the last element from this list.
-     *
-     * @return the last element from this list
-     * @throws NoSuchElementException if this list is empty
      */
     @Override
     public E removeLast(){
-        if (tail == null) throw new NoSuchElementException();
         E temp = tail.getEl();
         unlinkTail();
         return temp;
     }
-
     /**
      * Removes the element at the specified position in this list.
-     * This implementation delegates to the parent class, which uses the list iterator.
-     *
-     * @param index the index of the element to be removed
-     * @return the element previously at the specified position
-     * @throws IndexOutOfBoundsException if the index is out of range (index < 0 || index >= size())
      */
     @Override
     public E remove(int index){
         return super.remove(index);
     }
 
-    /**
-     * Links e as the last element.
-     * @param e the element to link
-     */
     private void linkToTail(E e){
         CustomNode<E> newNode = new CustomNode<>(e);
         if(head == null){ //empty list
@@ -187,10 +121,6 @@ public class CustomLinkedList<E> extends AbstractSequentialList<E> {
         size++;
     }
 
-    /**
-     * Links e as the first element.
-     * @param e the element to link
-     */
     private void linkToHead(E e){
         CustomNode<E> newNode = new CustomNode<>(e);
         if (head == null){ //empty list
@@ -203,15 +133,9 @@ public class CustomLinkedList<E> extends AbstractSequentialList<E> {
         size++;
     }
 
-    /**
-     * Inserts element e before non-null Node node.
-     * @param e the element to link
-     * @param node the node to link before
-     */
     private void linkBefore(E e, CustomNode<E> node){
         CustomNode<E> newNode = new CustomNode<>(e);
         CustomNode<E> prev = node.getPrev();
-        // If the node to link before is the head, this becomes a linkToHead operation
         if(prev == null){
             linkToHead(e);
         } else {
@@ -222,11 +146,9 @@ public class CustomLinkedList<E> extends AbstractSequentialList<E> {
             node.setPrev(newNode);
             size++;
         }
+
     }
 
-    /**
-     * Unlinks the first node (head) of the list. Assumes head is not null.
-     */
     private void unlinkHead(){
         CustomNode<E> newHead = head.next;
         if(newHead == null){
@@ -239,9 +161,6 @@ public class CustomLinkedList<E> extends AbstractSequentialList<E> {
         size--;
     }
 
-    /**
-     * Unlinks the last node (tail) of the list. Assumes tail is not null.
-     */
     private void unlinkTail(){
         CustomNode<E> newTail = tail.prev;
         if(newTail == null){
@@ -254,10 +173,7 @@ public class CustomLinkedList<E> extends AbstractSequentialList<E> {
         size--;
     }
 
-    /**
-     * Unlinks a non-null node from the list. Handles cases where the node is the head or tail.
-     * @param node the node to unlink
-     */
+
     private void unlink(CustomNode<E> node){
         CustomNode<E> prevUnlinked = node.prev;
         CustomNode<E> nextUnlinked = node.next;
@@ -270,48 +186,40 @@ public class CustomLinkedList<E> extends AbstractSequentialList<E> {
             nextUnlinked.setPrev(prevUnlinked);
             size--;
         }
-        node = null; // Help GC
+        node = null;
     }
 
-    /**
-     * Returns the Node at the specified element index.
-     * This method contains an optimization: it traverses from the beginning
-     * or the end of the list, whichever is closer to the specified index.
-     *
-     * @param idx index of the node to return
-     * @return the node at the specified index
-     */
     private CustomNode<E> getNodeByIndex(int idx){
-        // A special case for the iterator to get a cursor position at the end.
         if(idx == size){
             return null;
         }
-
+        int lstSize = size();
         CustomNode<E> node;
-        if (idx < (size >> 1)) { // Check if index is in the first half
+        if (idx < (lstSize >> 1)) {
             node = head;
             for (int i = 0; i < idx; i++)
                 node = node.getNext();
-        } else { // Index is in the second half
+        } else {
             node = tail;
-            for (int i = size - 1; i > idx; i--)
+            for (int i = lstSize - 1; i > idx; i--)
                 node = node.getPrev();
         }
         return node;
     }
 
     /**
-     * An iterator for the CustomLinkedList.
-     * This private inner class provides the core logic for traversing and modifying the list.
+     * An inner class that provides the core logic for traversing and modifying the list.
+     * Its implementation of the {@link ListIterator} interface is essential for the parent
+     * class, {@link AbstractSequentialList}, to function correctly.
      */
     private class CustomIterator implements ListIterator<E> {
-        private CustomNode<E> lastAccessed;
-        private CustomNode<E> next;
-        private int nextIndex;
+        CustomNode<E> lastAccessed;
+        CustomNode<E> next;
+        int nextIndex;
 
         public CustomIterator(int idx){
             if(idx > size() || idx < 0){
-                throw new IndexOutOfBoundsException("Index: " + idx + ", Size: " + size());
+                throw new IndexOutOfBoundsException();
             }
             next = getNodeByIndex(idx);
             nextIndex = idx;
@@ -331,8 +239,6 @@ public class CustomLinkedList<E> extends AbstractSequentialList<E> {
             nextIndex++;
             return lastAccessed.getEl();
         }
-
-
 
         @Override
         public boolean hasPrevious() {
@@ -362,12 +268,9 @@ public class CustomLinkedList<E> extends AbstractSequentialList<E> {
         @Override
         public void remove() {
             if (lastAccessed == null) throw new IllegalStateException();
-            // This condition checks if previous() was the last call that moved the cursor.
-            if (lastAccessed == next){
-                next = next.next; // Must adjust 'next' pointer before unlinking
+            if (lastAccessed == next){ //if previous() was called before remove
+                next = next.next;
             } else{
-                // If next() was the last call, the index has already been incremented,
-                // so we must decrement it to reflect the removal.
                 nextIndex--;
             }
             unlink(lastAccessed);
@@ -382,9 +285,9 @@ public class CustomLinkedList<E> extends AbstractSequentialList<E> {
 
         @Override
         public void add(E e) {
-            if(next == null){ // Iterator at the end of the list
+            if(next == null){ //if list is empty, or oterator at the end of list
                 linkToTail(e);
-            } else { // Iterator is somewhere in the middle or at the start
+            } else{ //linking in the middle
                 linkBefore(e, next);
             }
             lastAccessed = null;
@@ -394,15 +297,16 @@ public class CustomLinkedList<E> extends AbstractSequentialList<E> {
     }
 
     /**
-     * A static nested class representing a node in the linked list.
-     * Each node contains an element, a reference to the next node, and a reference to the previous node.
+     * A static nested class representing a single node within the linked list.
+     * Each node holds a reference to its data element and pointers to the previous
+     * and next nodes in the sequence, forming the chain of the list.
+     *
      * @param <E> The type of element stored in the node
      */
     private static class CustomNode<E> {
         private E el;
         private CustomNode<E> next;
         private CustomNode<E> prev;
-
         CustomNode(E el) {
             this.el = el;
         }
