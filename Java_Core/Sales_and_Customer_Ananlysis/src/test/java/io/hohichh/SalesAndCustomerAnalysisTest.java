@@ -1,3 +1,9 @@
+/*
+ * Author: Yelizaveta Verkovich aka Hohich
+ * Task: Analyze orders list using StreamAPI to collect different business metrics
+ * The implementation must be covered with unit tests using JUnit 5.
+ */
+
 package io.hohichh;
 
 import io.hohichh.DTO.Customer;
