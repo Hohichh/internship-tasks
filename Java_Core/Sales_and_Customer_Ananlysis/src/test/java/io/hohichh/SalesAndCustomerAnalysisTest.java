@@ -39,6 +39,11 @@ class SalesAndCustomerAnalysisTest {
         assertThat(actualCities).containsExactlyInAnyOrderElementsOf(referenceCities);
     }
 
+    /**
+     * Gets a list of unique cities from all orders using the Stream API.
+     * @param orders the list of orders to process.
+     * @return a list of unique city names.
+     */
     private List<String> cities(List<Order> orders) {
         return orders.stream()
                 .map(order -> order.getCustomer().getCity())
@@ -46,6 +51,12 @@ class SalesAndCustomerAnalysisTest {
                 .toList();
     }
 
+    /**
+     * Gets a list of unique cities from all orders using a traditional loop.
+     * This method serves as a reference implementation for comparison.
+     * @param orders the list of orders to process.
+     * @return a list of unique city names.
+     */
     private List<String> citiesRef(List<Order> orders) {
         Set<String> referenceCitiesSet = new HashSet<>();
         for (Order order : orders) {
@@ -67,6 +78,11 @@ class SalesAndCustomerAnalysisTest {
         assertThat(actualIncome).isEqualTo(referenceIncome, withPrecision(0.01));
     }
 
+    /**
+     * Calculates the total income from all delivered orders using the Stream API.
+     * @param orders the list of orders to process.
+     * @return the total income as a double.
+     */
     private double income(List<Order> orders) {
         return orders.stream()
                 .filter(order -> order.getStatus() == DELIVERED)
@@ -75,6 +91,12 @@ class SalesAndCustomerAnalysisTest {
                 .sum();
     }
 
+    /**
+     * Calculates the total income from all delivered orders using a traditional loop.
+     * This method serves as a reference implementation for comparison.
+     * @param orders the list of orders to process.
+     * @return the total income as a double.
+     */
     private double incomeRef(List<Order> orders) {
         double referenceIncome = 0.0;
 
@@ -100,6 +122,12 @@ class SalesAndCustomerAnalysisTest {
         assertThat(actualProductName).isEqualTo(referenceProductName);
     }
 
+    /**
+     * Finds the name of the product with the highest total sales revenue using the Stream API.
+     * It only considers orders that have been delivered.
+     * @param orders the list of orders to analyze.
+     * @return the name of the most popular product, or null if no orders are found.
+     */
     private String productBySales(List<Order> orders) {
         Map<String, Double> totalRevenueByProduct = orders.stream()
                 .filter(order -> order.getStatus() == DELIVERED)
@@ -115,6 +143,12 @@ class SalesAndCustomerAnalysisTest {
                 .orElse(null);
     }
 
+    /**
+     * Finds the name of the product with the highest total sales revenue using traditional loops.
+     * This method serves as a reference implementation for comparison.
+     * @param orders the list of orders to analyze.
+     * @return the name of the most popular product, or null if no orders are found.
+     */
     private String productBySalesRef(List<Order> orders) {
         Map<String, Double> nameToIncomeRef = new HashMap<>();
         for (Order order : orders) {
@@ -148,8 +182,12 @@ class SalesAndCustomerAnalysisTest {
     @Test
     @DisplayName("Average check for successfully delivered orders")
     void average_check_for_successfully_delivered_orders_test() {
-        double actualAverageCheck = averageCheck(orders);
-        double referenceAverageCheck = averageCheckRef(orders);
+        double actualAverageCheck = Math.round(
+                averageCheck(orders)
+                        * 100.0) / 100.0;
+        double referenceAverageCheck = Math.round(
+                averageCheckRef(orders)
+                        * 100.0) / 100.0;
 
         System.out.println("Average check for successfully delivered order with Stream: " + actualAverageCheck);
         System.out.println("Average check for successfully delivered order with cycles:    " + referenceAverageCheck);
@@ -157,13 +195,18 @@ class SalesAndCustomerAnalysisTest {
         assertThat(actualAverageCheck).isEqualTo(referenceAverageCheck);
     }
 
+    /**
+     * Calculates the average order value for all delivered orders using the Stream API.
+     * @param orders the list of orders to process.
+     * @return the average check value.
+     */
     private double averageCheck(List<Order> orders){
         List<Double> checkSums = orders.stream()
                 .filter(order -> order.getStatus() == DELIVERED)
                 .flatMap(order -> Stream.of(order.getItems()))
                 .mapToDouble(orderItems ->
-                    orderItems.stream()
-                            .mapToDouble(item -> item.getPrice() * item.getQuantity()).sum()
+                        orderItems.stream()
+                                .mapToDouble(item -> item.getPrice() * item.getQuantity()).sum()
                 ).boxed().toList();
 
         return checkSums.stream()
@@ -172,18 +215,24 @@ class SalesAndCustomerAnalysisTest {
                 .getAsDouble();
     }
 
+    /**
+     * Calculates the average order value for all delivered orders using a traditional loop.
+     * This method serves as a reference implementation for comparison.
+     * @param orders the list of orders to process.
+     * @return the average check value.
+     */
     private double averageCheckRef(List<Order> orders){
         double sum = 0.0;
-        int itemCount = 0;
+        int orderCount = 0;
         for (Order order : orders) {
             if (order.getStatus() == DELIVERED) {
+                orderCount++;
                 for (OrderItem item : order.getItems()) {
                     sum += item.getPrice() * item.getQuantity();
-                    itemCount++;
                 }
             }
         }
-        return sum / itemCount;
+        return sum / orderCount;
     }
 
     @Test
@@ -198,14 +247,35 @@ class SalesAndCustomerAnalysisTest {
         assertThat(actualCustomers).containsExactlyInAnyOrderElementsOf(referenceCustomers);
     }
 
+    /**
+     * Finds all customers who have placed more than 5 orders using the Stream API.
+     * @param orders the list of orders to analyze.
+     * @return a list of customers meeting the criteria.
+     */
     private List<Customer> customers(List<Order> orders) {
-        Map<Order, Customer> customerMap = new HashMap<>();
-        customerMap = orders.stream()
-
-        return null;
+        Map<Customer, List<Order>> customerMap = orders.stream()
+                .collect(Collectors.groupingBy(
+                        Order::getCustomer
+                ));
+        return customerMap.entrySet().stream()
+                .filter(entry -> entry.getValue().size() > 5)
+                .map(Map.Entry::getKey)
+                .toList();
     }
 
+    /**
+     * Finds all customers who have placed more than 5 orders using a traditional loop.
+     * This method serves as a reference implementation for comparison.
+     * @param orders the list of orders to analyze.
+     * @return a list of customers meeting the criteria.
+     */
     private List<Customer> customersRef(List<Order> orders) {
-        return null;
+        Map<Customer, List<Order>> customerMap = new HashMap<>();
+        for (Order order : orders) {
+            customerMap.computeIfAbsent(order.getCustomer(), k -> new ArrayList<>()).add(order);
+        }
+        customerMap.values().removeIf(customerOrders -> customerOrders.size() <= 5);
+
+        return new ArrayList<>(customerMap.keySet());
     }
 }
