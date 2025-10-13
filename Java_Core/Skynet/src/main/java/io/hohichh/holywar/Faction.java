@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Faction implements Runnable{
     private final Queue<Detail> storage;
@@ -34,8 +36,9 @@ public class Faction implements Runnable{
         for(int day = 1 ; day <= DAYS ; day++){
             try {
                 barrier.await();
-                entryStorage();
-                buildRobots();
+                int parts = entryStorage();
+                int robots = buildRobots();
+                logReport(day, parts, robots);
                 barrier.await();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
@@ -45,21 +48,30 @@ public class Faction implements Runnable{
         }
     }
 
+    public String getName(){
+        return name;
+    }
+
     public int getRobotCount(){
         return robotCount;
     }
 
-    private void entryStorage(){
+
+    private int entryStorage(){
+        int partsTaken = 0;
         for(int i = 0; i < 5; i++){
             Detail detail = storage.poll();
             if(detail == null){
                 break;
             }
+            partsTaken++;
             robotBodyParts.merge(detail, 1, Integer::sum);
         }
+        return partsTaken;
     }
 
-    private void buildRobots(){
+    private int buildRobots(){
+        int robotsBuilt = 0;
          while(robotBodyParts.getOrDefault(Detail.HEAD, 0) >= HEADS_REF_COUNT
                 && robotBodyParts.getOrDefault(Detail.TORSO, 0) >= TORSO_REF_COUNT
                 && robotBodyParts.getOrDefault(Detail.ARM, 0) >= ARM_REF_COUNT
@@ -70,6 +82,33 @@ public class Faction implements Runnable{
              robotBodyParts.compute(Detail.ARM, (key, val) -> val - ARM_REF_COUNT);
              robotBodyParts.compute(Detail.LEG, (key, val) -> val - LEG_REF_COUNT);
             robotCount++;
+            robotsBuilt++;
         }
+         return robotsBuilt;
+    }
+
+    private void logReport(int day, int partsTaken, int robotsBuilt) {
+        StringBuilder reportMessage = new StringBuilder();
+
+        if (partsTaken > 0) {
+            reportMessage.append("Совершена вылазка на склад. Захвачено ресурсов: ").append(partsTaken).append(" ед. ");
+        } else {
+            if (robotsBuilt > 0) {
+                reportMessage.append("Новых ресурсов не захвачено. ");
+            } else {
+                reportMessage.append("Разведка донесла, что центральный склад пуст. Фракция вернулась с пустыми руками.");
+            }
+        }
+
+        if (robotsBuilt > 0) {
+            reportMessage.append("Сборочные цеха активированы: создано новых боевых единиц: ").append(robotsBuilt).append(".");
+        } else {
+            if (partsTaken > 0) {
+                reportMessage.append("Полученных компонентов недостаточно для запуска производственного цикла.");
+            }
+        }
+        Object[] logParams = { day, "ФРАКЦИЯ " + name.toUpperCase() };
+        Logger.getLogger(Faction.class.getName())
+                .log(Level.INFO, reportMessage.toString(), logParams);
     }
 }

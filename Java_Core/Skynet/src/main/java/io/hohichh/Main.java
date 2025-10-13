@@ -3,13 +3,34 @@ package io.hohichh;
 import io.hohichh.holywar.Detail;
 import io.hohichh.holywar.Faction;
 import io.hohichh.holywar.Factory;
+import io.hohichh.logging.HolyLoggerConfig;
 
+import java.io.IOException;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CyclicBarrier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Main {
     public static void main(String[] args) throws InterruptedException {
+        try {
+            HolyLoggerConfig.setup();
+        } catch (IOException e) {
+            System.err.println("Can't configure logger: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        Logger.getLogger(Main.class.getName())
+                .log(Level.INFO, "И восстали машины из пепла ядерного огня," +
+                        " и пошла война на уничтожения человечества. " +
+                        "И шла она десятилетия, но последнее сражение состоится не в будущем," +
+                        " оно состоится здесь, в наше время, сегодня ночью.");
+
+        Logger.getLogger(Main.class.getName())
+                .log(Level.INFO, "=======================================================================\n");
+
+
         final int DAYS = 100;
         final CyclicBarrier barrier = new CyclicBarrier(3);
 
@@ -30,11 +51,40 @@ public class Main {
         worldThread.join();
         wednesdayThread.join();
 
-        System.out.println("======================================");
-        System.out.println("Симуляция на протяжении " + DAYS + " дней завершена!");
-        System.out.println("Армия фракции 'World': " + factionWorld.getRobotCount() + " роботов.");
-        System.out.println("Армия фракции 'Wednesday': " + factionWednesday.getRobotCount() + " роботов.");
+        String winnerName;
+        int worldRobots = factionWorld.getRobotCount();
+        int wednesdayRobots = factionWednesday.getRobotCount();
 
+        if (worldRobots > wednesdayRobots) {
+            winnerName = factionWorld.getName();
+        } else if (wednesdayRobots > worldRobots) {
+            winnerName = factionWednesday.getName();
+        } else {
+            winnerName = "НИЧЬЯ";
+        }
+        Logger.getLogger(Main.class.getName())
+                .log(Level.INFO, "=======================================================================");
 
+        String finalVerdict;
+        if (winnerName.equals("НИЧЬЯ")) {
+            finalVerdict = "И так закончилась стодневная война. Никто не смог одержать верх, и над пеплом фабрик воцарилось хрупкое равновесие стали.";
+        } else {
+            finalVerdict = String.format(
+                    "И так гласит хроника этой эпохи машин. В битве за технологическое господство победу одержала фракция '%s', чья воля и сталь оказались крепче.",
+                    winnerName
+            );
+        }
+
+        String finalReport = String.format(
+                        "ИТОГИ ВЕЛИКОГО ПРОТИВОСТОЯНИЯ:\n\n" +
+                        "   Легионы фракции 'World' восстали числом в %d стальных воинов.\n" +
+                        "   Технокульт 'Wednesday' породил армию из %d несокрушимых конструктов.\n\n" +
+                        "%s\n",
+                worldRobots,
+                wednesdayRobots,
+                finalVerdict
+        );
+
+        Logger.getLogger(Main.class.getName()).log(Level.INFO, finalReport);
     }
 }
