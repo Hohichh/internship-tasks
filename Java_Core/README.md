@@ -2,7 +2,7 @@
 ---
 
 This subsection contains the following tasks:
-- [] Custom Linked List
-- [] Sales and Customer Analysis
-- [] Skynet
-- [] Mini Spring
+- [x] Custom Linked List
+- [x] Sales and Customer Analysis
+- [x] Skynet
+- [ ] Mini Spring
