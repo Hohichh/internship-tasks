@@ -2,10 +2,12 @@ package io.hohichh.appcontext;
 
 import io.hohichh.appcontext.annotations.Autowired;
 import io.hohichh.appcontext.annotations.Component;
+import io.hohichh.appcontext.annotations.Scope;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
@@ -14,22 +16,28 @@ import java.util.jar.JarInputStream;
 
 public class MiniApplicationContext {
 
-    private final Map<Class<?>, Object> beans = new HashMap<>();
+    private final Map<Class<?>, Object> singletonBeans = new HashMap<>();
+    private final Map<Class<?>, Class<?>> prototypes = new HashMap<>();
 
     public MiniApplicationContext(String packageName) {
         try {
             Set<Class<?>> componentClasses = scanPackageForComponents(packageName);
 
             for (Class<?> clazz : componentClasses) {
-                Object beanInstance = clazz.getDeclaredConstructor().newInstance();
-                beans.put(clazz, beanInstance);
+                Scope scope = clazz.getAnnotation(Scope.class);
+                if(scope != null && scope.value().equals("prototype")) {
+                    prototypes.put(clazz, clazz);
+                } else{
+                    Object instance = clazz.getDeclaredConstructor().newInstance();
+                    singletonBeans.put(clazz, instance);
+                }
             }
 
-            for (Object bean : beans.values()) {
+            for (Object bean : singletonBeans.values()) {
                 injectDependencies(bean);
             }
 
-            for (Object bean : beans.values()) {
+            for (Object bean : singletonBeans.values()) {
                 if (bean instanceof InitializingBean) {
                     ((InitializingBean) bean).afterPropertiesSet();
                 }
@@ -41,18 +49,32 @@ public class MiniApplicationContext {
 
     @SuppressWarnings("unchecked")
     public <T> T getBean(Class<T> type) {
-        Object bean = beans.get(type);
-        if (bean == null) {
-            for (Object b : beans.values()) {
-                if (type.isAssignableFrom(b.getClass())) {
-                    return (T) b;
+        Object bean = singletonBeans.get(type);
+        if (bean != null) {
+            return (T) bean;
+        }
+
+        Class<?> prototype = prototypes.get(type);
+        if (prototype != null) {
+            try{
+                Object protoInstance = prototype.getDeclaredConstructor().newInstance();
+                injectDependencies(protoInstance);
+                if( protoInstance instanceof InitializingBean){
+                    ((InitializingBean) protoInstance).afterPropertiesSet();
                 }
+                return (T) protoInstance;
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to create prototype bean", e);
             }
         }
-        if (bean == null) {
-            throw new RuntimeException("Bean of type " + type.getSimpleName() + " not found.");
+
+        for(Object obj : singletonBeans.values()) {
+            if(type.isAssignableFrom(obj.getClass())){
+                return (T) obj;
+            }
         }
-        return (T) bean;
+
+        throw new RuntimeException("Bean of type " + type.getSimpleName() + " not found.");
     }
 
     private void injectDependencies(Object bean) throws IllegalAccessException {
