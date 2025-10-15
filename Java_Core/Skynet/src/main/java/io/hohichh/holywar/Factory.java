@@ -24,12 +24,20 @@ public class Factory implements Runnable{
     @Override
     public void run() {
         for(int day = 1; day <= DAYS; day++){
+            Logger.getLogger(Factory.class.getName())
+                    .log(Level.INFO, "ФАЗА ДНЯ", new Object[]{day});
 
             int detailCount = produce();
             logReport(day, detailCount);
+
             try {
-                barrier.await();
-                barrier.await();
+                barrier.await(); //here all 3 threads are awaited, so cyclic barrier make then runnable
+                Logger.getLogger(Factory.class.getName())
+                        .log(Level.INFO, "Рабочий день " + day + " окончен", new Object[]{day});
+
+                barrier.await(); //but the factory doesen't work at night and waits till other threads become awaited
+                Logger.getLogger(Factory.class.getName())
+                        .log(Level.INFO, "Фабрика засыпает, просыпаются фракции", new Object[]{day});
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             } catch (BrokenBarrierException e) {

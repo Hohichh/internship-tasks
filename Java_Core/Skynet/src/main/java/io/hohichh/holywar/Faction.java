@@ -35,11 +35,18 @@ public class Faction implements Runnable{
     public void run() {
         for(int day = 1 ; day <= DAYS ; day++){
             try {
-                barrier.await();
+                barrier.await(); //while factory do its task, factions waiting
+
+                Logger.getLogger(Factory.class.getName()) //then, when all 3 threads are awaited, barrier runs them
+                        .log(Level.INFO, "ФАЗА НОЧИ", new Object[]{day});
                 int parts = entryStorage();
                 int robots = buildRobots();
                 logReport(day, parts, robots);
-                barrier.await();
+
+                Logger.getLogger(Factory.class.getName())
+                        .log(Level.INFO, "Миссия завершена. Фракция" + name +
+                                " засыпает, просыпается фабрика", new Object[]{day});
+                barrier.await(); //when factions end their tasks, all 3 threads are awaited, and barrier run them
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             } catch (BrokenBarrierException e) {
