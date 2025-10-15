@@ -31,17 +31,19 @@ To facilitate testing and demonstration, a mock data source was created in the `
 
 ### Business Logic
 
-The computation for each business metric was implemented directly within the `SalesAndCustomerAnalysisTest` test class. For each metric, two separate methods were developed:
-1.  One implementation using the **Stream API** for a modern, declarative approach.
-2.  A reference implementation (`Ref`) using traditional loops and imperative logic.
+The business logic for calculating metrics has been structured using the **Strategy design pattern** to ensure a clear separation of concerns and flexibility. This approach avoids monolithic classes and improves maintainability.
 
-This dual-implementation approach allows for robust verification of the Stream API logic by comparing its results against the more straightforward reference implementation.
+A central interface, `SalesAnalyzer`, defines the contract for any analysis implementation. Two concrete strategies are provided, each encapsulating a different algorithmic approach:
+1.  **`StreamStrategy`**: Implements the calculations using the modern, declarative **Stream API**.
+2.  **`LoopStrategy`**: Provides a reference implementation using traditional loops and imperative logic.
+
+This design decouples the client code (in this case, the tests) from the specific implementation details, making the system easier to maintain and extend with new analysis strategies in the future.
 
 ## Test Coverage
 
-The project's correctness is ensured through a comprehensive set of unit tests located in `SalesAndCustomerAnalysisTest`. Each business metric is covered by a dedicated test method.
+The project's correctness is ensured through a comprehensive set of unit tests located in `SalesAndCustomerAnalysisTest`. Each business metric is covered by a dedicated test method that validates the logic by comparing the outputs of both strategies.
 
 The testing strategy is as follows:
-1.  For each metric, both the Stream API implementation and the reference (loop-based) implementation are executed.
+1.  For each metric, an instance of the `StreamStrategy` and the `LoopStrategy` are executed with the same input data.
 2.  The results from both methods are then compared using the **AssertJ** assertion library.
-3.  Tests are considered successful only if the output from the Stream API version exactly matches the output from the reference version, thus validating the correctness of the stream-based data processing logic.
+3.  Tests are considered successful only if the output from the `StreamStrategy` version exactly matches the output from the reference `LoopStrategy` version, thus validating the correctness of the stream-based data processing logic.
