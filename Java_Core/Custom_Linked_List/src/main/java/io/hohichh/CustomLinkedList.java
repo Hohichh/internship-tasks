@@ -1,338 +1,186 @@
-/*
- * Author: Yelizaveta Verkovich aka Hohich
- * Task: Create a custom realization of LinkedList and implement a set of standard operations.
- * The implementation must be covered with unit tests using JUnit 5.
- */
 package io.hohichh;
+import java.util.NoSuchElementException;
 
-import java.util.*;
+public class CustomLinkedList<E> {
+    private int size;
 
-/**
- * A custom implementation of a doubly-linked list, extending {@link AbstractSequentialList}
- * to simplify the implementation of index-based operations. This class manages the list's
- * structure through references to its head and tail nodes.
- *
- * @param <E> the type of elements held in this collection
- */
-public class CustomLinkedList<E> extends AbstractSequentialList<E>
-{
     private CustomNode<E> head;
     private CustomNode<E> tail;
 
-    private int size;
-
-    public CustomLinkedList() {}
-
-    /**
-     * Returns the number of elements in this list.
-     */
-    @Override
-    public int size() {
-        return this.size;
+    public int size(){
+        return size;
     }
 
-    /**
-     * Returns the element at the specified position in this list.
-     */
-    @Override
-    public E get(int index) {
-        return super.get(index);
-    }
-
-    /**
-     * Returns a list iterator over the elements in this list.
-     */
-    @Override
-    public ListIterator<E> listIterator(int index) {
-        return new CustomIterator(index);
-    }
-    /**
-     * Inserts the specified element at the beginning of this list.
-     */
-    @Override
     public void addFirst(E e){
-        linkToHead(e);
-    }
-    /**
-     * Appends the specified element to the end of this list.
-     */
-    @Override
-    public void addLast(E e){
-        linkToTail(e);
-    }
-
-    /**
-     * Inserts the specified element at the specified position in this list.
-     */
-    public void add(E e, int index) {
-        super.add(index, e);
-    }
-
-    /**
-     * Returns the first element in this list.
-     */
-    @Override
-    public E getFirst(){
-        return head.getEl();
-    }
-    /**
-     * Returns the last element in this list.
-     */
-    @Override
-    public E getLast(){
-        return tail.getEl();
-    }
-
-    /**
-     * Removes and returns the first element from this list.
-     */
-    @Override
-    public E removeFirst(){
-        E temp = head.getEl();
-        unlinkHead();
-        return temp;
-    }
-    /**
-     * Removes and returns the last element from this list.
-     */
-    @Override
-    public E removeLast(){
-        E temp = tail.getEl();
-        unlinkTail();
-        return temp;
-    }
-    /**
-     * Removes the element at the specified position in this list.
-     */
-    @Override
-    public E remove(int index){
-        return super.remove(index);
-    }
-
-    private void linkToTail(E e){
         CustomNode<E> newNode = new CustomNode<>(e);
-        if(head == null){ //empty list
+        if(head == null){
             head = tail = newNode;
-        } else {
-            tail.setNext(newNode);
-            newNode.setPrev(tail);
-            tail = newNode;
-        }
-        size++;
-    }
-
-    private void linkToHead(E e){
-        CustomNode<E> newNode = new CustomNode<>(e);
-        if (head == null){ //empty list
-            head = tail = newNode;
-        } else {
+        } else{
             newNode.setNext(head);
             head.setPrev(newNode);
             head = newNode;
         }
         size++;
     }
-
-    private void linkBefore(E e, CustomNode<E> node){
+    public void addLast(E e){
         CustomNode<E> newNode = new CustomNode<>(e);
-        CustomNode<E> prev = node.getPrev();
-        if(prev == null){
-            linkToHead(e);
-        } else {
-            newNode.setNext(node);
-            newNode.setPrev(prev);
+        if(tail == null){
+            head = tail = newNode;
+        } else{
+            tail.setNext(newNode);
+            newNode.setPrev(tail);
+            tail = newNode;
+        }
+        size++;
+    }
+    public void add(int index, E e){
+        if(index < 0 || index > size){
+            throw new IndexOutOfBoundsException();
+        }
+        if(index == size){
+            addLast(e);
+        } else if(index == 0){
+            addFirst(e);
+        } else{
+            CustomNode<E> newNode = new CustomNode<>(e);
+            CustomNode<E> currNode = getNodeByIndex(index);
+            CustomNode<E> prevCurr = currNode.getPrev();
+            currNode.setPrev(newNode);
+            newNode.setNext(currNode);
 
-            prev.setNext(newNode);
-            node.setPrev(newNode);
+            prevCurr.setNext(newNode);
+            newNode.setPrev(prevCurr);
             size++;
         }
 
     }
 
-    private void unlinkHead(){
-        CustomNode<E> newHead = head.next;
-        if(newHead == null){
-            head = tail = null;
-        }else{
-            newHead.prev = null;
-            head.next = null;
-            head = newHead;
+    public E getFirst(){
+        if(head == null){
+            throw new NoSuchElementException();
+        }
+        E el = head.getEl();
+        return el;
+    }
+    public E getLast(){
+        if(tail == null){
+            throw new NoSuchElementException();
+        }
+        E el = tail.getEl();
+        return el;
+    }
+    public E get(int index){
+        return getNodeByIndex(index).getEl();
+    }
+    public E removeFirst(){
+        if(head == null){
+            throw new NoSuchElementException();
+        }
+        E headEl = head.getEl();
+        CustomNode<E> newHead = head.getNext();
+
+        head.setNext(null);
+        head = newHead;
+        if(head == null){
+            tail = null;
+        } else{
+            newHead.setPrev(null);
         }
         size--;
+        return headEl;
     }
+    public E removeLast(){
+        if(tail == null){
+            throw new NoSuchElementException();
+        }
+        E tailEl = tail.getEl();
+        CustomNode<E> newTail = tail.getPrev();
 
-    private void unlinkTail(){
-        CustomNode<E> newTail = tail.prev;
-        if(newTail == null){
-            head = tail = null;
+        tail.setPrev(null);
+        tail = newTail;
+        if(tail == null){
+            head = null;
         } else{
-            newTail.next = null;
-            tail.prev = null;
-            tail = newTail;
+            newTail.setNext(null);
         }
         size--;
+        return tailEl;
     }
 
-
-    private void unlink(CustomNode<E> node){
-        CustomNode<E> prevUnlinked = node.prev;
-        CustomNode<E> nextUnlinked = node.next;
-        if(prevUnlinked == null){
-            unlinkHead();
-        }else if(nextUnlinked == null){
-            unlinkTail();
+    public E remove(int index){
+        if(index < 0 || index >= size){
+            throw new IndexOutOfBoundsException();
+        }
+        if(index == size - 1){
+            return removeLast();
+        } else if(index == 0){
+            return removeFirst();
         } else{
-            prevUnlinked.setNext(nextUnlinked);
-            nextUnlinked.setPrev(prevUnlinked);
+            CustomNode<E> curr = getNodeByIndex(index);
+            E el = curr.getEl();
+            CustomNode<E> prevCurr = curr.getPrev();
+            CustomNode<E> nextCurr = curr.getNext();
+
+            prevCurr.setNext(nextCurr);
+            nextCurr.setPrev(prevCurr);
+            curr = null;
+
             size--;
+            return el;
         }
-        node = null;
     }
 
-    private CustomNode<E> getNodeByIndex(int idx){
-        if(idx == size){
-            return null;
+    private CustomNode<E> getNodeByIndex(int index){
+        if(index < 0 || index >= size){
+            throw new IndexOutOfBoundsException();
         }
-        int lstSize = size();
-        CustomNode<E> node;
-        if (idx < (lstSize >> 1)) {
-            node = head;
-            for (int i = 0; i < idx; i++)
-                node = node.getNext();
-        } else {
-            node = tail;
-            for (int i = lstSize - 1; i > idx; i--)
-                node = node.getPrev();
+        CustomNode<E> search;
+        if(index < (size >> 1)){
+            search = head;
+            for(int i = 0; i < index; i++){
+                search = search.getNext();
+            }
         }
-        return node;
+        else{
+            search = tail;
+            for(int i = size-1; i > index; i--){
+                search = search.getPrev();
+            }
+        }
+        return search;
     }
 
-    /**
-     * An inner class that provides the core logic for traversing and modifying the list.
-     * Its implementation of the {@link ListIterator} interface is essential for the parent
-     * class, {@link AbstractSequentialList}, to function correctly.
-     */
-    private class CustomIterator implements ListIterator<E> {
-        CustomNode<E> lastAccessed;
-        CustomNode<E> next;
-        int nextIndex;
-
-        public CustomIterator(int idx){
-            if(idx > size() || idx < 0){
-                throw new IndexOutOfBoundsException();
-            }
-            next = getNodeByIndex(idx);
-            nextIndex = idx;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return nextIndex < size();
-        }
-
-        @Override
-        public E next() {
-            if(!hasNext()) throw new NoSuchElementException();
-
-            lastAccessed = next;
-            next = next.getNext();
-            nextIndex++;
-            return lastAccessed.getEl();
-        }
-
-        @Override
-        public boolean hasPrevious() {
-            return nextIndex > 0;
-        }
-
-        @Override
-        public E previous() {
-            if(!hasPrevious()) throw new NoSuchElementException();
-
-            next = (next == null) ? tail : next.getPrev();
-            lastAccessed = next;
-            nextIndex--;
-            return lastAccessed.getEl();
-        }
-
-        @Override
-        public int nextIndex() {
-            return nextIndex;
-        }
-
-        @Override
-        public int previousIndex() {
-            return nextIndex - 1;
-        }
-
-        @Override
-        public void remove() {
-            if (lastAccessed == null) throw new IllegalStateException();
-            if (lastAccessed == next){ //if previous() was called before remove
-                next = next.next;
-            } else{
-                nextIndex--;
-            }
-            unlink(lastAccessed);
-            lastAccessed = null;
-        }
-
-        @Override
-        public void set(E e) {
-            if(lastAccessed == null) throw new IllegalStateException();
-            lastAccessed.setEl(e);
-        }
-
-        @Override
-        public void add(E e) {
-            if(next == null){ //if list is empty, or oterator at the end of list
-                linkToTail(e);
-            } else{ //linking in the middle
-                linkBefore(e, next);
-            }
-            lastAccessed = null;
-            nextIndex++;
-        }
-
-    }
-
-    /**
-     * A static nested class representing a single node within the linked list.
-     * Each node holds a reference to its data element and pointers to the previous
-     * and next nodes in the sequence, forming the chain of the list.
-     *
-     * @param <E> The type of element stored in the node
-     */
-    private static class CustomNode<E> {
+    static class CustomNode<E>{
         private E el;
         private CustomNode<E> next;
         private CustomNode<E> prev;
-        CustomNode(E el) {
+
+        public CustomNode(E el){
             this.el = el;
-        }
-
-        public CustomNode<E> getPrev() {
-            return prev;
-        }
-
-        public void setPrev(CustomNode<E> prev) {
-            this.prev = prev;
-        }
-
-        public CustomNode<E> getNext() {
-            return next;
-        }
-
-        public void setNext(CustomNode<E> next) {
-            this.next = next;
         }
 
         public E getEl() {
             return el;
         }
 
+        public CustomNode<E> getNext(){
+            return next;
+        }
+
+        public CustomNode<E> getPrev(){
+            return prev;
+        }
+
         public void setEl(E el) {
             this.el = el;
+        }
+
+        public void setNext(CustomNode<E> next) {
+            this.next = next;
+        }
+
+        public void setPrev(CustomNode<E> prev) {
+            this.prev = prev;
         }
     }
 }

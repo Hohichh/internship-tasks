@@ -70,31 +70,21 @@ class CustomLinkedListTest {
     }
 
     @Test
-    @DisplayName("add(el, 0) should behave like addFirst()")
+    @DisplayName("add(index, el) at index 0 should behave like addFirst()")
     void testAdd_atIndexZero_shouldBehaveLikeAddFirst() {
-        list.add("A", 0);
-        list.add("B", 0);
+        list.add(0, "A");
+        list.add(0, "B");
         assertEquals(2, list.size());
         assertEquals("B", list.get(0));
         assertEquals("A", list.get(1));
     }
 
     @Test
-    @DisplayName("add(el, size) should behave like addLast()")
-    void testAdd_atIndexSize_shouldBehaveLikeAddLast() {
-        list.add("A");
-        list.add("B", 1);
-        assertEquals(2, list.size());
-        assertEquals("A", list.get(0));
-        assertEquals("B", list.get(1));
-    }
-
-    @Test
-    @DisplayName("add(el, index) in the middle should insert element correctly")
+    @DisplayName("add(index, el) in the middle should insert element correctly")
     void testAdd_inTheMiddle_shouldInsertElementCorrectly() {
         list.addLast("A");
         list.addLast("C");
-        list.add("B", 1);
+        list.add(1, "B");
         assertEquals(3, list.size());
         assertEquals("A", list.get(0));
         assertEquals("B", list.get(1));
@@ -102,10 +92,21 @@ class CustomLinkedListTest {
     }
 
     @Test
-    @DisplayName("add(el, index) with an invalid index should throw IndexOutOfBoundsException")
+    @DisplayName("add(index, el) at the end of the list should behave like addLast()")
+    void testAdd_atEnd_shouldBehaveLikeAddLast() {
+        list.addLast("A");
+        list.add(1, "B");
+        assertEquals(2, list.size());
+        assertEquals("A", list.getFirst());
+        assertEquals("B", list.getLast());
+    }
+
+
+    @Test
+    @DisplayName("add(index, el) with an invalid index should throw IndexOutOfBoundsException")
     void testAdd_withInvalidIndex_shouldThrowException() {
-        assertThrows(IndexOutOfBoundsException.class, () -> list.add("A", -1));
-        assertThrows(IndexOutOfBoundsException.class, () -> list.add("A", 1));
+        assertThrows(IndexOutOfBoundsException.class, () -> list.add(-1, "A"));
+        assertThrows(IndexOutOfBoundsException.class, () -> list.add(1, "A"));
     }
 
     @Test
@@ -119,7 +120,7 @@ class CustomLinkedListTest {
     @Test
     @DisplayName("getFirst() on an empty list should throw an exception")
     void testGetFirst_onEmptyList_shouldThrowException() {
-        assertThrows(NullPointerException.class, () -> list.getFirst());
+        assertThrows(NoSuchElementException.class, () -> list.getFirst());
     }
 
     @Test
@@ -133,7 +134,7 @@ class CustomLinkedListTest {
     @Test
     @DisplayName("getLast() on an empty list should throw an exception")
     void testGetLast_onEmptyList_shouldThrowException() {
-        assertThrows(NullPointerException.class, () -> list.getLast());
+        assertThrows(NoSuchElementException.class, () -> list.getLast());
     }
 
     @Test
@@ -162,6 +163,7 @@ class CustomLinkedListTest {
         String removed = list.removeFirst();
         assertEquals("A", removed);
         assertEquals(0, list.size());
+        assertThrows(NoSuchElementException.class, () -> list.getFirst());
     }
 
     @Test
@@ -178,7 +180,7 @@ class CustomLinkedListTest {
     @Test
     @DisplayName("removeFirst() on an empty list should throw an exception")
     void testRemoveFirst_onEmptyList_shouldThrowException() {
-        assertThrows(NullPointerException.class, () -> list.removeFirst());
+        assertThrows(NoSuchElementException.class, () -> list.removeFirst());
     }
 
     @Test
@@ -188,6 +190,7 @@ class CustomLinkedListTest {
         String removed = list.removeLast();
         assertEquals("A", removed);
         assertEquals(0, list.size());
+        assertThrows(NoSuchElementException.class, () -> list.getLast());
     }
 
     @Test
@@ -204,7 +207,7 @@ class CustomLinkedListTest {
     @Test
     @DisplayName("removeLast() on an empty list should throw an exception")
     void testRemoveLast_onEmptyList_shouldThrowException() {
-        assertThrows(NullPointerException.class, () -> list.removeLast());
+        assertThrows(NoSuchElementException.class, () -> list.removeLast());
     }
 
     @Test
@@ -251,50 +254,6 @@ class CustomLinkedListTest {
     }
 
     @Test
-    @DisplayName("set(index, element) at the beginning of the list should update the element")
-    void testSet_atBeginning_shouldUpdateElement() {
-        list.addLast("A");
-        list.addLast("B");
-        String oldElement = list.set(0, "Z");
-        assertEquals("A", oldElement);
-        assertEquals("Z", list.get(0));
-        assertEquals(2, list.size());
-    }
-
-    @Test
-    @DisplayName("set(index, element) in the middle of the list should update the element")
-    void testSet_inTheMiddle_shouldUpdateElement() {
-        list.addLast("A");
-        list.addLast("B");
-        list.addLast("C");
-        String oldElement = list.set(1, "Y");
-        assertEquals("B", oldElement);
-        assertEquals("Y", list.get(1));
-        assertEquals(3, list.size());
-    }
-
-    @Test
-    @DisplayName("set(index, element) at the end of the list should update the element")
-    void testSet_atEnd_shouldUpdateElement() {
-        list.addLast("A");
-        list.addLast("B");
-        String oldElement = list.set(1, "X");
-        assertEquals("B", oldElement);
-        assertEquals("X", list.get(1));
-        assertEquals(2, list.size());
-    }
-
-    @Test
-    @DisplayName("set(index, element) with an invalid index should throw IndexOutOfBoundsException")
-    void testSet_withInvalidIndex_shouldThrowException() {
-        list.add("A");
-        assertThrows(IndexOutOfBoundsException.class, () -> list.set(-1, "Z"));
-        assertThrows(IndexOutOfBoundsException.class, () -> list.set(1, "Z"));
-    }
-
-
-
-    @Test
     @DisplayName("getNodeByIndex() should find node from head when index is in the first half")
     void testGetNodeByIndex_whenIndexInFirstHalf_shouldIterateFromHead() {
         list.addLast("A");
@@ -302,96 +261,19 @@ class CustomLinkedListTest {
         list.addLast("C");
         list.addLast("D");
         list.addLast("E");
+        // This test indirectly checks the getNodeByIndex optimization
         assertEquals("B", list.get(1));
     }
 
-
     @Test
-    @DisplayName("ListIterator.hasPrevious() should return false at the beginning")
-    void testListIterator_hasPrevious_atStartShouldBeFalse() {
-        list.add("A");
-        var iterator = list.listIterator(0);
-        assertFalse(iterator.hasPrevious());
+    @DisplayName("getNodeByIndex() should find node from tail when index is in the second half")
+    void testGetNodeByIndex_whenIndexInSecondHalf_shouldIterateFromTail() {
+        list.addLast("A");
+        list.addLast("B");
+        list.addLast("C");
+        list.addLast("D");
+        list.addLast("E");
+        // This test indirectly checks the getNodeByIndex optimization
+        assertEquals("D", list.get(3));
     }
-
-    @Test
-    @DisplayName("ListIterator.hasPrevious() should return true in the middle or end")
-    void testListIterator_hasPrevious_inMiddleShouldBeTrue() {
-        list.add("A");
-        list.add("B");
-        var iterator = list.listIterator(1);
-        assertTrue(iterator.hasPrevious());
-    }
-
-    @Test
-    @DisplayName("ListIterator.previous() should traverse the list backwards")
-    void testListIterator_previous_shouldReturnElementsInReverseOrder() {
-        list.add("A");
-        list.add("B");
-        var iterator = list.listIterator(2);
-        assertTrue(iterator.hasPrevious());
-        assertEquals("B", iterator.previous());
-        assertTrue(iterator.hasPrevious());
-        assertEquals("A", iterator.previous());
-        assertFalse(iterator.hasPrevious());
-    }
-
-    @Test
-    @DisplayName("ListIterator.previous() at the beginning should throw NoSuchElementException")
-    void testListIterator_previous_atStartShouldThrowException() {
-        list.add("A");
-        var iterator = list.listIterator(0);
-        assertThrows(NoSuchElementException.class, iterator::previous);
-    }
-
-    @Test
-    @DisplayName("ListIterator indices should be correct during forward and backward traversal")
-    void testListIterator_indices_shouldBeCorrect() {
-        list.add("A");
-        list.add("B");
-        var iterator = list.listIterator(0);
-
-        assertEquals(0, iterator.nextIndex());
-        assertEquals(-1, iterator.previousIndex());
-
-        iterator.next();
-
-        assertEquals(1, iterator.nextIndex());
-        assertEquals(0, iterator.previousIndex());
-
-        iterator.next();
-
-        assertEquals(2, iterator.nextIndex());
-        assertEquals(1, iterator.previousIndex());
-
-        iterator.previous();
-
-        assertEquals(1, iterator.nextIndex());
-        assertEquals(0, iterator.previousIndex());
-    }
-
-
-    @Test
-    @DisplayName("ListIterator.remove() after a call to previous() should remove the correct element")
-    void testListIterator_removeAfterPrevious_shouldRemoveLastElementReturnedByPrevious() {
-        list.add("A");
-        list.add("B");
-        list.add("C");
-        var iterator = list.listIterator();
-
-        iterator.next();
-        iterator.next();
-
-        iterator.previous();
-
-        iterator.remove();
-
-        assertEquals(2, list.size());
-        assertEquals("A", list.get(0));
-        assertEquals("C", list.get(1));
-
-        assertTrue(iterator.hasNext());
-        assertEquals("C", iterator.next());
-    }
-
 }
