@@ -38,66 +38,8 @@ The tests are designed to achieve maximum code and branch coverage for all imple
 These tests confirm that the custom implementation behaves as expected and is a reliable alternative to the standard `LinkedList`.
 
 Here are some screenshots showing the tests being run and passed:
-![Successfully passed test suits](images/passed_tests.png)
+![Successfully passed test suits](images/tests_passed.png)
 
 Test coverage demonstration:
 ![Test coverage demonstration](images/test_coverage.png)
-## Usage Examples
 
-Below are a few examples demonstrating how to use the `CustomLinkedList`.
-
-```java
-public class Main {
-    public static void main(String[] args) {
-        CustomLinkedList<String> list = new CustomLinkedList();
-        list.add("A", 0);
-        list.add("B", 1);
-        list.addFirst("First ");
-        list.addLast(" Last");
-        list.add(" mid ", 2);
-        printList(list);
-
-        list.removeFirst();
-        printList(list);
-
-        list.removeLast();
-        printList(list);
-
-        list.remove(1);
-        printList(list);
-
-    }
-
-    public static void printList(CustomLinkedList<String> list){
-        for(String el: list){
-            System.out.println(el);
-        }
-        System.out.println("______________________");
-    }
-}
-```
-
-Concole output:
-
-```
-First 
-A
- mid 
-B
- Last
-______________________
-A
- mid 
-B
- Last
-______________________
-A
- mid 
-B
-______________________
-A
-B
-______________________
-
-Process finished with exit code 0
-```
